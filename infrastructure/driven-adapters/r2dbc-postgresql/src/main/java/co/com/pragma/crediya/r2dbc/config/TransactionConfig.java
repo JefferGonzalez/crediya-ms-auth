@@ -1,4 +1,4 @@
-package co.com.pragma.crediya.config;
+package co.com.pragma.crediya.r2dbc.config;
 
 
 import co.com.pragma.crediya.model.transaction.gateways.TransactionalPort;

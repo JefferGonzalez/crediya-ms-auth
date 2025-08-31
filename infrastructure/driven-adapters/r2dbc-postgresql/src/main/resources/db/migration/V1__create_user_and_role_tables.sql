@@ -1,14 +1,15 @@
 CREATE TABLE users
 (
-    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    names        VARCHAR(100)        NOT NULL,
-    last_name    VARCHAR(100)        NOT NULL,
-    email        VARCHAR(254) UNIQUE NOT NULL,
-    base_salary  NUMERIC(15, 2)      NOT NULL,
-    birth_date   DATE,
-    phone_number VARCHAR(20),
-    address      VARCHAR(255),
-    rol_id       UUID                NOT NULL
+    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    names                 VARCHAR(100)        NOT NULL,
+    last_name             VARCHAR(100)        NOT NULL,
+    identification_number VARCHAR(10) UNIQUE  NOT NULL,
+    email                 VARCHAR(254) UNIQUE NOT NULL,
+    base_salary           NUMERIC(15, 2)      NOT NULL,
+    birth_date            DATE,
+    phone_number          VARCHAR(20),
+    address               VARCHAR(255),
+    rol_id                UUID                NOT NULL
 );
 
 CREATE TABLE roles

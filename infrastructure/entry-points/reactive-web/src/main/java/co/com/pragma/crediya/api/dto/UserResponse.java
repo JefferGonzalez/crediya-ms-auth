@@ -23,6 +23,8 @@ public class UserResponse {
 
     private LocalDate birthDate;
 
+    private String identificationNumber;
+
     private String email;
 
     private String address;

@@ -3,15 +3,16 @@ DROP TABLE IF EXISTS roles;
 
 CREATE TABLE users
 (
-    id           UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
-    names        VARCHAR(100)        NOT NULL,
-    last_name    VARCHAR(100)        NOT NULL,
-    email        VARCHAR(254) UNIQUE NOT NULL,
-    base_salary  DECIMAL(15, 2)      NOT NULL,
-    birth_date   DATE,
-    phone_number VARCHAR(20),
-    address      VARCHAR(255),
-    rol_id       UUID                NOT NULL
+    id                    UUID DEFAULT RANDOM_UUID() PRIMARY KEY,
+    names                 VARCHAR(100)        NOT NULL,
+    last_name             VARCHAR(100)        NOT NULL,
+    identification_number VARCHAR(10) UNIQUE  NOT NULL,
+    email                 VARCHAR(254) UNIQUE NOT NULL,
+    base_salary           DECIMAL(15, 2)      NOT NULL,
+    birth_date            DATE,
+    phone_number          VARCHAR(20),
+    address               VARCHAR(255),
+    rol_id                UUID                NOT NULL
 );
 
 CREATE TABLE roles

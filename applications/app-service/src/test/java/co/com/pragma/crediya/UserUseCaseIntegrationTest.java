@@ -1,6 +1,5 @@
 package co.com.pragma.crediya;
 
-import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
 import co.com.pragma.crediya.model.user.exceptions.RoleNotFoundException;
@@ -29,9 +28,6 @@ class UserUseCaseIntegrationTest {
     @Autowired
     private UserReactiveRepository userReactiveRepository;
 
-    @Autowired
-    private LoggerPort logger;
-
     @MockitoSpyBean
     private UserRepositoryAdapter userRepositoryAdapter;
 
@@ -43,7 +39,7 @@ class UserUseCaseIntegrationTest {
     @Test
     void shouldRollbackTransactionWhenUserRepositoryThrowsException() {
         Role role = new Role(null, null, null);
-        User user = new User(null, "John", "Doe", null, "johndoe@example.com", null, null, new BigDecimal("2000000"), role);
+        User user = new User(null, "John", "Doe", null, "123456789", "johndoe@example.com", null, null, new BigDecimal("2000000"), role);
 
         doReturn(Mono.error(new RoleNotFoundException()))
                 .when(userRepositoryAdapter).save(any(User.class));

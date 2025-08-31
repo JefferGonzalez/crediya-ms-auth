@@ -9,6 +9,7 @@ public record User(
         String names,
         String lastName,
         LocalDate birthDate,
+        String identificationNumber,
         String email,
         String address,
         String phoneNumber,

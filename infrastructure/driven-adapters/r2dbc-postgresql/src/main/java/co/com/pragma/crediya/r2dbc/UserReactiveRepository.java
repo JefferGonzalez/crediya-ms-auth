@@ -12,4 +12,6 @@ public interface UserReactiveRepository
 
     Mono<Boolean> existsByEmail(String name);
 
+    Mono<Boolean> existsByIdentificationNumber(String identificationNumber);
+
 }

@@ -1,8 +1,8 @@
 package co.com.pragma.crediya.api.exceptions;
 
 import co.com.pragma.crediya.api.constants.HttpErrorTitles;
-import co.com.pragma.crediya.model.user.exceptions.EmailAlreadyTakenException;
-import co.com.pragma.crediya.model.user.exceptions.EmptyRequestBodyException;
+import co.com.pragma.crediya.model.common.validation.ValidationFailuresException;
+import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import co.com.pragma.crediya.model.user.exceptions.SalaryOutOfRangeException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -61,12 +61,16 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         }
 
         if (ex instanceof SalaryOutOfRangeException) {
-            List<FieldValidationError> errors = List.of(new FieldValidationError("baseSalary", ex.getMessage()));
+            List<FieldValidationError> errors = List.of(new FieldValidationError(UserFieldNames.BASE_SALARY, ex.getMessage()));
             return ProblemDetails.badRequest(HttpErrorTitles.BAD_REQUEST, errors);
         }
 
-        if (ex instanceof EmailAlreadyTakenException) {
-            List<FieldValidationError> errors = List.of(new FieldValidationError("email", ex.getMessage()));
+        if (ex instanceof ValidationFailuresException exs) {
+            List<FieldValidationError> errors = exs.getErrors().stream()
+                    .filter(result -> !result.isValid())
+                    .map(result -> new FieldValidationError(result.field(), result.errorMessage()))
+                    .toList();
+
             return ProblemDetails.conflict(HttpErrorTitles.CONFLICT, errors);
         }
 

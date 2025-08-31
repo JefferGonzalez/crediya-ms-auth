@@ -1,17 +1,9 @@
-package co.com.pragma.crediya.model.user.exceptions;
+package co.com.pragma.crediya.model.common.constants;
 
-public final class ErrorMessages {
+public class ValidationErrorMessages {
 
-    private ErrorMessages() {
+    private ValidationErrorMessages() {
     }
-
-    public static final String ROLE_NOT_FOUND = "We couldn’t find the specified role.";
-
-    public static final String SALARY_OUT_OF_RANGE = "Base salary must be between 0 and 15,000,000.";
-
-    public static final String EMAIL_ALREADY_TAKEN = "This email address is already registered.";
-
-    public static final String REQUEST_BODY_REQUIRED = "Request body is required";
 
     public static final String NAME_REQUIRED = "Name cannot be empty.";
 
@@ -30,6 +22,12 @@ public final class ErrorMessages {
     public static final String LASTNAME_INVALID_FORMAT = "Last name can only contain letters.";
 
     public static final String INVALID_DATE_FORMAT = "Invalid date format. Use YYYY-MM-DD";
+
+    public static final String IDENTIFICATION_NUMBER_REQUIRED = "Identification number is required.";
+
+    public static final String IDENTIFICATION_NUMBER_LENGTH = "Identification number must be exactly 10 digits.";
+
+    public static final String INVALID_IDENTIFICATION_NUMBER_FORMAT = "Identification number must contain only digits.";
 
     public static final String EMAIL_REQUIRED = "Email cannot be empty.";
 

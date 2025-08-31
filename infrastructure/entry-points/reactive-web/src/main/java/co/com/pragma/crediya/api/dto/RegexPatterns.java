@@ -9,4 +9,6 @@ public final class RegexPatterns {
 
     public static final String DECIMAL_REGEX = "^-?\\d+(\\.\\d{1,2})?$";
 
+    public static final String IDENTIFICATION_NUMBER_REGEX = "^\\d+$";
+
 }

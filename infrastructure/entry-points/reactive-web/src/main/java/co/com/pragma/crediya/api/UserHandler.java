@@ -1,9 +1,9 @@
 package co.com.pragma.crediya.api;
 
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
-import co.com.pragma.crediya.api.mapper.UserMapper;
+import co.com.pragma.crediya.api.exceptions.EmptyRequestBodyException;
+import co.com.pragma.crediya.api.mapper.UserRestMapper;
 import co.com.pragma.crediya.api.validator.ReactiveValidator;
-import co.com.pragma.crediya.model.user.exceptions.EmptyRequestBodyException;
 import co.com.pragma.crediya.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,15 +19,17 @@ public class UserHandler {
 
     private final UserUseCase userUseCase;
 
+    private final UserRestMapper userMapper;
+
     private final ReactiveValidator reactiveValidator;
 
     public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest request) {
         return request.bodyToMono(SaveUserRequest.class)
                 .switchIfEmpty(Mono.error(new EmptyRequestBodyException()))
                 .flatMap(reactiveValidator::validate)
-                .map(UserMapper::toDomain)
+                .map(userMapper::toDomain)
                 .flatMap(userUseCase::save)
-                .map(UserMapper::toResponse)
+                .map(userMapper::toResponse)
                 .flatMap(storedUser ->
                         ServerResponse.status(HttpStatus.CREATED)
                                 .contentType(MediaType.APPLICATION_JSON)

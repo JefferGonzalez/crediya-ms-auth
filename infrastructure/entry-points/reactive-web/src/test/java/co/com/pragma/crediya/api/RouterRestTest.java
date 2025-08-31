@@ -2,10 +2,11 @@ package co.com.pragma.crediya.api;
 
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
 import co.com.pragma.crediya.api.dto.UserResponse;
+import co.com.pragma.crediya.api.mapper.UserRestMapper;
 import co.com.pragma.crediya.api.validator.ReactiveValidator;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
-import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
+import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.usecase.user.UserUseCase;
 import jakarta.validation.Validator;
 import org.assertj.core.api.Assertions;
@@ -20,7 +21,6 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -37,6 +37,9 @@ class RouterRestTest {
     private ReactiveValidator reactiveValidator;
 
     @MockitoBean
+    private UserRestMapper userRestMapper;
+
+    @MockitoBean
     private Validator validator;
 
     @MockitoBean
@@ -47,29 +50,46 @@ class RouterRestTest {
 
     private SaveUserRequest request;
 
+    private User user;
+
+    private UserResponse userResponse;
+
+    private final UUID userId = UUID.fromString("7171da0f-12e1-4e04-a2d6-a7dc43d6d411");
+
     @BeforeEach
     void setup() {
+        request = SaveUserRequest.builder()
+                .names("John")
+                .lastName("Doe")
+                .identificationNumber("123456789")
+                .email("johndoe@example.com")
+                .baseSalary("15000000")
+                .build();
+
+        user = new User(userId, "John", "Doe", null, "123456789", "johndoe@example.com", null, null, new BigDecimal("15000000"), null);
+
+        userResponse = UserResponse.builder()
+                .id(userId)
+                .names("John")
+                .lastName("Doe")
+                .identificationNumber("123456789")
+                .email("johndoe@example.com")
+                .baseSalary(new BigDecimal("15000000"))
+                .rol(DomainConstants.DEFAULT_ROLE)
+                .build();
+
         when(reactiveValidator.validate(any())).thenAnswer(invocation ->
                 Mono.just(invocation.getArgument(0))
         );
 
-        request = SaveUserRequest.builder()
-                .names("John")
-                .lastName("Doe")
-                .birthDate("1980-01-01")
-                .email("johndoe@example.com")
-                .address("Unknown")
-                .phoneNumber("123456789")
-                .baseSalary("15000000")
-                .build();
+        when(userRestMapper.toDomain(any(SaveUserRequest.class))).thenReturn(user);
     }
 
     @Test
     void saveUser_shouldReturnCreated_whenValidRequest() {
-        Role role = new Role(null, "CUSTOMER", null);
-        User user = new User(UUID.randomUUID(), "John", "Doe", LocalDate.of(1980, 1, 1), "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), role);
-
         when(userUseCase.save(any(User.class))).thenReturn(Mono.just(user));
+
+        when(userRestMapper.toResponse(any(User.class))).thenReturn(userResponse);
 
         webTestClient.post()
                 .uri("/api/v1/users")
@@ -81,7 +101,8 @@ class RouterRestTest {
                 .value(response -> {
                     Assertions.assertThat(response).isInstanceOf(UserResponse.class);
                     Assertions.assertThat(response.getId()).isNotNull();
-                    Assertions.assertThat(response.getRol()).isEqualTo("CUSTOMER");
+                    Assertions.assertThat(response.getId()).isEqualTo(userId);
+                    Assertions.assertThat(response.getRol()).isEqualTo(DomainConstants.DEFAULT_ROLE);
                 });
     }
 }

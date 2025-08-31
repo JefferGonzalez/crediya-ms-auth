@@ -2,24 +2,22 @@ package co.com.pragma.crediya.r2dbc;
 
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
-import co.com.pragma.crediya.r2dbc.entity.RoleEntity;
-import co.com.pragma.crediya.r2dbc.helper.ReactiveAdapterOperations;
-import org.reactivecommons.utils.ObjectMapper;
+import co.com.pragma.crediya.r2dbc.mapper.RoleDatabaseMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
-import java.util.UUID;
-
 @Repository
-public class RoleRepositoryAdapter
-        extends ReactiveAdapterOperations<Role, RoleEntity, UUID, RoleReactiveRepository> implements RoleRepository {
+@RequiredArgsConstructor
+public class RoleRepositoryAdapter implements RoleRepository {
 
-    public RoleRepositoryAdapter(RoleReactiveRepository repository, ObjectMapper mapper) {
-        super(repository, mapper, d -> new Role(d.getId(), d.getName(), d.getDescription()));
-    }
+    private final RoleReactiveRepository repository;
+
+    private final RoleDatabaseMapper mapper;
 
     @Override
     public Mono<Role> findByName(String role) {
-        return repository.findByName(role).map(this::toEntity);
+        return repository.findByName(role)
+                .map(mapper::toDomain);
     }
 }

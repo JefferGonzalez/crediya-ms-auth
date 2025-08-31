@@ -1,6 +1,9 @@
 package co.com.pragma.crediya.r2dbc.entity;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -15,22 +18,24 @@ import java.util.UUID;
 @Builder
 public class UserEntity {
 
-	@Id
-	private UUID id;
+    @Id
+    private UUID id;
 
-	private String names;
+    private String names;
 
-	private String lastName;
+    private String lastName;
 
-	private LocalDate birthDate;
+    private LocalDate birthDate;
 
-	private String email;
+    private String identificationNumber;
 
-	private String address;
+    private String email;
 
-	private String phoneNumber;
+    private String address;
 
-	private BigDecimal baseSalary;
+    private String phoneNumber;
+
+    private BigDecimal baseSalary;
 
     private UUID rolId;
 

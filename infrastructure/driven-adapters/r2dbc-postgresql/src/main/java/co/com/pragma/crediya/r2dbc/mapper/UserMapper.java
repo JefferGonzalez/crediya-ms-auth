@@ -19,7 +19,7 @@ public final class UserMapper {
 
         Role r = role != null ? new Role(role.getId(), role.getName(), role.getDescription()) : null;
 
-        return new User(user.getId(), user.getNames(), user.getLastName(), user.getBirthDate(), user.getEmail(), user.getAddress(), user.getPhoneNumber(), user.getBaseSalary(), r);
+        return new User(user.getId(), user.getNames(), user.getLastName(), user.getBirthDate(), user.getIdentificationNumber(), user.getEmail(), user.getAddress(), user.getPhoneNumber(), user.getBaseSalary(), r);
     }
 
     public static UserEntity toEntity(User user) {
@@ -34,6 +34,7 @@ public final class UserMapper {
                 .names(user.names())
                 .lastName(user.lastName())
                 .birthDate(user.birthDate())
+                .identificationNumber(user.identificationNumber())
                 .email(user.email())
                 .address(user.address())
                 .phoneNumber(user.phoneNumber())

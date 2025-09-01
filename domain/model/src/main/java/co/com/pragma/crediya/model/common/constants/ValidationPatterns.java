@@ -1,7 +1,9 @@
-package co.com.pragma.crediya.api.dto;
+package co.com.pragma.crediya.model.common.constants;
 
-public final class RegexPatterns {
-    private RegexPatterns() {}
+public final class ValidationPatterns {
+
+    private ValidationPatterns() {
+    }
 
     public static final String NAME_REGEX = "^[\\p{L}]+(?:[\\s'\\-][\\p{L}]+)*$";
 

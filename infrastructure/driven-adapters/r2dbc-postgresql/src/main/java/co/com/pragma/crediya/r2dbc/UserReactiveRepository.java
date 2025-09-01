@@ -14,4 +14,6 @@ public interface UserReactiveRepository
 
     Mono<Boolean> existsByIdentificationNumber(String identificationNumber);
 
+    Mono<UserEntity> findByIdentificationNumber(String identificationNumber);
+
 }

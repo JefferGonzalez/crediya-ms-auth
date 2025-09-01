@@ -5,6 +5,8 @@ public final class HttpErrorTitles {
     private HttpErrorTitles() {
     }
 
+    public static final String NOT_FOUND = "Not Found";
+
     public static final String BAD_REQUEST = "Bad Request Parameters";
 
     public static final String CONFLICT = "Conflict Detected";

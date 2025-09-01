@@ -1,7 +1,6 @@
 package co.com.pragma.crediya.r2dbc;
 
 import co.com.pragma.crediya.model.user.User;
-import co.com.pragma.crediya.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
 import co.com.pragma.crediya.r2dbc.mapper.UserDatabaseMapper;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +12,6 @@ import reactor.core.publisher.Mono;
 public class UserRepositoryAdapter implements UserRepository {
 
     private final UserReactiveRepository userReactiveRepository;
-
-    private final RoleReactiveRepository roleReactiveRepository;
 
     private final UserDatabaseMapper userMapper;
 
@@ -29,13 +26,15 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Mono<User> findByIdentificationNumber(String identificationNumber) {
+        return userReactiveRepository.findByIdentificationNumber(identificationNumber)
+                .map(userMapper::toDomain);
+    }
+
+    @Override
     public Mono<User> save(User user) {
-        return roleReactiveRepository.findByName(user.role().name())
-                .switchIfEmpty(Mono.error(new RoleNotFoundException()))
-                .flatMap(roleEntity ->
-                        userReactiveRepository.save(userMapper.toEntity(user))
-                                .map(userEntity -> userMapper.toDomain(userEntity, roleEntity))
-                );
+        return userReactiveRepository.save(userMapper.toEntity(user))
+                .map(userMapper::toDomain);
     }
 
 }

@@ -5,6 +5,8 @@ public final class UserErrorMessages {
     private UserErrorMessages() {
     }
 
+    public static final String USER_NOT_FOUND = "User not found";
+
     public static final String ROLE_NOT_FOUND = "We couldn’t find the specified role.";
 
     public static final String SALARY_OUT_OF_RANGE = "Base salary must be between 0 and 15,000,000.";

@@ -4,6 +4,7 @@ import co.com.pragma.crediya.api.dto.SaveUserRequest;
 import co.com.pragma.crediya.api.exceptions.EmptyRequestBodyException;
 import co.com.pragma.crediya.api.mapper.UserRestMapper;
 import co.com.pragma.crediya.api.validator.ReactiveValidator;
+import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import co.com.pragma.crediya.usecase.user.UserUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class UserHandler {
 
     private final ReactiveValidator reactiveValidator;
 
-    public Mono<ServerResponse> listenPOSTSaveUserUseCase(ServerRequest request) {
+    public Mono<ServerResponse> createUser(ServerRequest request) {
         return request.bodyToMono(SaveUserRequest.class)
                 .switchIfEmpty(Mono.error(new EmptyRequestBodyException()))
                 .flatMap(reactiveValidator::validate)
@@ -35,5 +36,15 @@ public class UserHandler {
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(storedUser)
                 );
+    }
+
+    public Mono<ServerResponse> getUserByIdentificationNumber(ServerRequest request) {
+        String identificationNumber = request.pathVariable(UserFieldNames.IDENTIFICATION_NUMBER);
+
+        return userUseCase.findByIdentificationNumber(identificationNumber)
+                .map(userMapper::toEmailResponse)
+                .flatMap(user -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(user));
     }
 }

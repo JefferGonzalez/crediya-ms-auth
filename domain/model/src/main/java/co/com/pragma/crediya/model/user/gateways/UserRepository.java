@@ -9,6 +9,8 @@ public interface UserRepository {
 
     Mono<Boolean> existsByIdentificationNumber(String identificationNumber);
 
+    Mono<User> findByIdentificationNumber(String identificationNumber);
+
     Mono<User> save(User user);
 
 }

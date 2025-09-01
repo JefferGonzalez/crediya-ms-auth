@@ -1,9 +1,8 @@
 package co.com.pragma.crediya.r2dbc;
 
+import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
-import co.com.pragma.crediya.model.common.constants.DomainConstants;
-import co.com.pragma.crediya.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.crediya.r2dbc.entity.RoleEntity;
 import co.com.pragma.crediya.r2dbc.mapper.UserDatabaseMapper;
 import io.r2dbc.spi.ConnectionFactories;
@@ -18,6 +17,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.r2dbc.config.AbstractR2dbcConfiguration;
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories;
 import org.springframework.r2dbc.connection.init.ConnectionFactoryInitializer;
@@ -55,8 +55,8 @@ class UserRepositoryAdapterIntegrationTest {
         }
 
         @Bean
-        public UserRepositoryAdapter userRepositoryAdapter(UserReactiveRepository userReactiveRepository, RoleReactiveRepository roleReactiveRepository, UserDatabaseMapper mapper) {
-            return new UserRepositoryAdapter(userReactiveRepository, roleReactiveRepository, mapper);
+        public UserRepositoryAdapter userRepositoryAdapter(UserReactiveRepository userReactiveRepository, UserDatabaseMapper mapper) {
+            return new UserRepositoryAdapter(userReactiveRepository, mapper);
         }
     }
 
@@ -97,9 +97,6 @@ class UserRepositoryAdapterIntegrationTest {
                 .assertNext(storedUser -> {
                     Assertions.assertNotNull(storedUser.id());
                     Assertions.assertEquals(user.names(), storedUser.names());
-                    Assertions.assertNotNull(storedUser.role());
-                    Assertions.assertEquals(roleEntity.getId(), storedUser.role().id());
-                    Assertions.assertEquals(roleEntity.getName(), storedUser.role().name());
                 }).verifyComplete();
 
         StepVerifier.create(userRepositoryAdapter.existsByEmail(user.email()))
@@ -112,12 +109,12 @@ class UserRepositoryAdapterIntegrationTest {
     }
 
     @Test
-    void shouldThrowRoleNotFoundException_WhenRoleDoesNotExist() {
-        Role invalidRole = new Role(null, "INVALID_ROLE", null);
+    void shouldThrowDataIntegrityViolationException_WhenRoleIdIsNull() {
+        Role invalidRole = new Role(null, null, null);
         User user = new User(null, "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), invalidRole);
 
         StepVerifier.create(userRepositoryAdapter.save(user))
-                .expectError(RoleNotFoundException.class)
+                .expectError(DataIntegrityViolationException.class)
                 .verify();
     }
 }

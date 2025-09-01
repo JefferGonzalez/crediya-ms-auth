@@ -1,4 +1,4 @@
-package co.com.pragma.crediya.config;
+package co.com.pragma.crediya.logger.config;
 
 import co.com.pragma.crediya.logger.Slf4jLoggerAdapter;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;

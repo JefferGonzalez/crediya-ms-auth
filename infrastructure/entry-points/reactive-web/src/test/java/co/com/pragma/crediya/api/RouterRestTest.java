@@ -1,12 +1,13 @@
 package co.com.pragma.crediya.api;
 
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
+import co.com.pragma.crediya.api.dto.UserEmailResponse;
 import co.com.pragma.crediya.api.dto.UserResponse;
 import co.com.pragma.crediya.api.mapper.UserRestMapper;
 import co.com.pragma.crediya.api.validator.ReactiveValidator;
+import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
 import co.com.pragma.crediya.model.user.User;
-import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.usecase.user.UserUseCase;
 import jakarta.validation.Validator;
 import org.assertj.core.api.Assertions;
@@ -105,4 +106,24 @@ class RouterRestTest {
                     Assertions.assertThat(response.getRol()).isEqualTo(DomainConstants.DEFAULT_ROLE);
                 });
     }
+
+    @Test
+    void getUserByIdentificationNumber_shouldReturnUser_whenFound() {
+        when(userUseCase.findByIdentificationNumber(user.identificationNumber()))
+                .thenReturn(Mono.just(user));
+
+        UserEmailResponse emailResponse = new UserEmailResponse(user.identificationNumber(), user.email());
+        when(userRestMapper.toEmailResponse(user)).thenReturn(emailResponse);
+
+        webTestClient.get()
+                .uri("/api/v1/users/{identificationNumber}", user.identificationNumber())
+                .accept(MediaType.APPLICATION_JSON)
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.identificationNumber").isEqualTo(emailResponse.getIdentificationNumber())
+                .jsonPath("$.email").isEqualTo(emailResponse.getEmail());
+    }
+
+
 }

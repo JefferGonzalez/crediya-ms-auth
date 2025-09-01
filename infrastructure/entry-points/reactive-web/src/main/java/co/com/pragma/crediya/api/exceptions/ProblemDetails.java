@@ -45,6 +45,10 @@ public class ProblemDetails {
         this.timestamp = LocalDateTime.now();
     }
 
+    public static ProblemDetails notFound(String title, List<FieldValidationError> errors) {
+        return new ProblemDetails(title, HttpStatus.NOT_FOUND, errors);
+    }
+
     public static ProblemDetails badRequest(String title, List<FieldValidationError> errors) {
         return new ProblemDetails(title, HttpStatus.BAD_REQUEST, errors);
     }

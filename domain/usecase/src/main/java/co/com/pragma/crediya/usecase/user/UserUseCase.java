@@ -10,10 +10,7 @@ import co.com.pragma.crediya.model.user.User;
 import co.com.pragma.crediya.model.user.constants.UserConstants;
 import co.com.pragma.crediya.model.user.constants.UserErrorMessages;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
-import co.com.pragma.crediya.model.user.exceptions.EmailAlreadyTakenException;
-import co.com.pragma.crediya.model.user.exceptions.IdentificationNumberAlreadyExistsException;
-import co.com.pragma.crediya.model.user.exceptions.RoleNotFoundException;
-import co.com.pragma.crediya.model.user.exceptions.SalaryOutOfRangeException;
+import co.com.pragma.crediya.model.user.exceptions.*;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
 import reactor.core.publisher.Mono;
@@ -72,11 +69,25 @@ public record UserUseCase(UserRepository userRepository,
                             User userToSave = new User(null, finalUser.names(), finalUser.lastName(), finalUser.birthDate(), finalUser.identificationNumber(), finalUser.email(), finalUser.address(), finalUser.phoneNumber(), finalUser.baseSalary(), role);
 
                             logger.info("Saving user with email: {}", finalUser.email());
-                            return userRepository.save(userToSave);
+                            return userRepository.save(userToSave)
+                                    .map(storedUser -> new User(storedUser.id(), storedUser.names(), storedUser.lastName(), storedUser.birthDate(), storedUser.identificationNumber(), storedUser.email(), storedUser.address(), storedUser.phoneNumber(), storedUser.baseSalary(), role));
                         }
                 ).as(transactionalPort::transactional)
                 .doOnSuccess(storedUser -> logger.info("User saved successfully with id: {}", storedUser.id()))
                 .doOnError(e -> logger.error("Failed to save user with email: " + finalUser.email(), e));
+    }
+
+    public Mono<User> findByIdentificationNumber(String identificationNumber) {
+        logger.info("Finding user with identification number: {}", identificationNumber);
+
+        return userRepository.findByIdentificationNumber(identificationNumber)
+                .switchIfEmpty(Mono.defer(() -> {
+                    UserNotFoundException ex = new UserNotFoundException();
+                    logger.error(UserErrorMessages.USER_NOT_FOUND, ex);
+
+                    return Mono.error(ex);
+                }))
+                .doOnNext(user -> logger.info("User found: {}", user.identificationNumber()));
     }
 
     private Mono<Role> validateRoleExists(String roleName) {

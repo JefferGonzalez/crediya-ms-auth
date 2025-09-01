@@ -3,6 +3,7 @@ package co.com.pragma.crediya.api;
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
 import co.com.pragma.crediya.api.dto.UserResponse;
 import co.com.pragma.crediya.api.exceptions.ProblemDetails;
+import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -28,7 +29,7 @@ public class RouterRest {
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
                     beanClass = UserHandler.class,
-                    beanMethod = "listenPOSTSaveUserUseCase",
+                    beanMethod = "createUser",
                     operation = @Operation(
                             operationId = "saveUser",
                             summary = "Create a new user",
@@ -67,7 +68,8 @@ public class RouterRest {
     })
     public RouterFunction<ServerResponse> routerFunction(UserHandler handler) {
         return RouterFunctions.route()
-                .POST("/api/v1/users", handler::listenPOSTSaveUserUseCase)
+                .GET("/api/v1/users/{" + UserFieldNames.IDENTIFICATION_NUMBER + "}", handler::getUserByIdentificationNumber)
+                .POST("/api/v1/users", handler::createUser)
                 .build();
     }
 

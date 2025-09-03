@@ -66,6 +66,9 @@ public class SaveUserRequest {
     @Schema(description = "User's password.", example = "P@ssw0rd")
     private String password;
 
+    @Schema(description = "User's role.", example = "CUSTOMER (By default)")
+    private String role;
+
     public LocalDate getBirthDate() {
         return (birthDate == null || birthDate.isEmpty()) ? null : LocalDate.parse(birthDate);
     }

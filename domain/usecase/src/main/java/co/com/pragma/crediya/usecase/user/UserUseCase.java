@@ -37,7 +37,7 @@ public record UserUseCase(UserRepository userRepository,
             return Mono.error(ex);
         }
 
-        if (user.role() == null) {
+        if (user.role() == null || user.role().name() == null || user.role().name().isEmpty()) {
             Role defaultRole = new Role(null, DomainConstants.CUSTOMER_ROLE, null);
             user = new User(null, user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), user.baseSalary(), defaultRole, user.password());
         }

@@ -7,10 +7,7 @@ import co.com.pragma.crediya.api.exceptions.JwtAuthenticationException;
 import co.com.pragma.crediya.api.exceptions.ProblemDetails;
 import co.com.pragma.crediya.model.common.validation.ValidationFailuresException;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
-import co.com.pragma.crediya.model.user.exceptions.InvalidCredentialsException;
-import co.com.pragma.crediya.model.user.exceptions.SalaryOutOfRangeException;
-import co.com.pragma.crediya.model.user.exceptions.UserDataInconsistencyException;
-import co.com.pragma.crediya.model.user.exceptions.UserNotFoundException;
+import co.com.pragma.crediya.model.user.exceptions.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
@@ -79,6 +76,10 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
         }
 
         if (ex instanceof UserNotFoundException) {
+            return ProblemDetails.notFound(HttpErrorTitles.NOT_FOUND, ex.getMessage());
+        }
+
+        if (ex instanceof RoleNotFoundException) {
             return ProblemDetails.notFound(HttpErrorTitles.NOT_FOUND, ex.getMessage());
         }
 

@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 public interface UserRestMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "role.name", source = "role")
     User toDomain(SaveUserRequest dto);
 
     @Mapping(source = "role.name", target = "rol")

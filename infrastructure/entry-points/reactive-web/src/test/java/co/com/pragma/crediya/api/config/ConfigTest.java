@@ -2,14 +2,18 @@ package co.com.pragma.crediya.api.config;
 
 import co.com.pragma.crediya.api.RouterRest;
 import co.com.pragma.crediya.api.UserHandler;
-import co.com.pragma.crediya.api.dto.SaveUserRequest;
-import co.com.pragma.crediya.api.dto.UserResponse;
-import co.com.pragma.crediya.api.exceptions.GlobalExceptionHandler;
+import co.com.pragma.crediya.api.config.security.JwtAuthenticationManager;
+import co.com.pragma.crediya.api.config.security.SecurityConfig;
+import co.com.pragma.crediya.api.config.security.SecurityContextRepository;
+import co.com.pragma.crediya.api.config.security.SecurityHeadersConfig;
+import co.com.pragma.crediya.api.constants.ApiConstants;
+import co.com.pragma.crediya.api.dto.LoginRequest;
+import co.com.pragma.crediya.api.exceptions.handler.CustomAccessDeniedHandler;
+import co.com.pragma.crediya.api.exceptions.handler.GlobalExceptionHandler;
 import co.com.pragma.crediya.api.mapper.UserRestMapper;
 import co.com.pragma.crediya.api.validator.ReactiveValidator;
-import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
-import co.com.pragma.crediya.model.user.User;
-import co.com.pragma.crediya.model.common.constants.DomainConstants;
+import co.com.pragma.crediya.model.jwt.gateways.JwtProviderPort;
+import co.com.pragma.crediya.usecase.auth.AuthUseCase;
 import co.com.pragma.crediya.usecase.user.UserUseCase;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,86 +27,72 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ContextConfiguration(classes = {RouterRest.class, UserHandler.class})
 @WebFluxTest
-@Import({CorsConfig.class, SecurityHeadersConfig.class, GlobalExceptionHandler.class})
+@Import({
+        CorsConfig.class,
+        SecurityHeadersConfig.class,
+        GlobalExceptionHandler.class,
+        CustomAccessDeniedHandler.class,
+        SecurityConfig.class
+})
 class ConfigTest {
 
     @Autowired
     private WebTestClient webTestClient;
 
     @MockitoBean
-    private ReactiveValidator reactiveValidator;
+    private JwtProviderPort jwtProviderPort;
 
     @MockitoBean
-    private UserRestMapper userRestMapper;
+    private JwtAuthenticationManager jwtAuthenticationManager;
+
+    @MockitoBean
+    private SecurityContextRepository securityContextRepository;
+
+    @MockitoBean
+    private ReactiveValidator reactiveValidator;
 
     @MockitoBean
     private Validator validator;
 
     @MockitoBean
-    private LoggerPort logger;
+    private UserRestMapper userRestMapper;
 
     @MockitoBean
     private UserUseCase userUseCase;
 
-    private SaveUserRequest request;
+    @MockitoBean
+    private AuthUseCase authUseCase;
 
-    private User user;
-
-    private UserResponse userResponse;
-
-    private final UUID userId = UUID.fromString("7171da0f-12e1-4e04-a2d6-a7dc43d6d411");
-
+    private LoginRequest request;
 
     @BeforeEach
     void setup() {
-        request = SaveUserRequest.builder()
-                .names("John")
-                .lastName("Doe")
-                .identificationNumber("123456789")
-                .email("johndoe@example.com")
-                .baseSalary("15000000")
-                .build();
-
-        user = new User(userId, "John", "Doe", null, "123456789", "johndoe@example.com", null, null, new BigDecimal("15000000"), null);
-
-        userResponse = UserResponse.builder()
-                .id(userId)
-                .names("John")
-                .lastName("Doe")
-                .identificationNumber("123456789")
-                .email("johndoe@example.com")
-                .baseSalary(new BigDecimal("15000000"))
-                .rol(DomainConstants.DEFAULT_ROLE)
-                .build();
+        request = new LoginRequest("johndoe@example.com", "@Client1234");
 
         when(reactiveValidator.validate(any())).thenAnswer(invocation ->
                 Mono.just(invocation.getArgument(0))
         );
-
-        when(userRestMapper.toDomain(any(SaveUserRequest.class))).thenReturn(user);
-
     }
 
     @Test
     void corsConfigurationShouldAllowOrigins() {
-        when(userUseCase.save(any())).thenReturn(Mono.just(user));
+        when(securityContextRepository.load(any()))
+                .thenReturn(Mono.empty());
 
-        when(userRestMapper.toResponse(any(User.class))).thenReturn(userResponse);
+        when(authUseCase.authenticate(request.getEmail(), request.getPassword()))
+                .thenReturn(Mono.just("fake-token"));
 
         webTestClient.post()
-                .uri("/api/v1/users")
+                .uri(ApiConstants.LOGIN_PATH)
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(request)
                 .exchange()
-                .expectStatus().isCreated()
+                .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-Security-Policy",
                         "default-src 'self'; frame-ancestors 'self'; form-action 'self'")
                 .expectHeader().valueEquals("Strict-Transport-Security", "max-age=31536000;")

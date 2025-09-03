@@ -77,11 +77,11 @@ class UserRepositoryAdapterIntegrationTest {
     void setUp() {
         userReactiveRepository.deleteAll().block();
 
-        roleEntity = roleReactiveRepository.findByName(DomainConstants.DEFAULT_ROLE).blockOptional()
+        roleEntity = roleReactiveRepository.findByName(DomainConstants.CUSTOMER_ROLE).blockOptional()
                 .orElseGet(() -> roleReactiveRepository.save(
                         RoleEntity.builder()
                                 .id(UUID.randomUUID())
-                                .name(DomainConstants.DEFAULT_ROLE)
+                                .name(DomainConstants.CUSTOMER_ROLE)
                                 .description("Customer with basic access")
                                 .build()
                 ).block());
@@ -91,7 +91,7 @@ class UserRepositoryAdapterIntegrationTest {
 
     @Test
     void shouldPersistUser_WhenSaveIsCalledWithValidRole() {
-        User user = new User(null, "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), role);
+        User user = new User(null, "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), role, "@Client1234");
 
         StepVerifier.create(userRepositoryAdapter.save(user))
                 .assertNext(storedUser -> {
@@ -111,7 +111,7 @@ class UserRepositoryAdapterIntegrationTest {
     @Test
     void shouldThrowDataIntegrityViolationException_WhenRoleIdIsNull() {
         Role invalidRole = new Role(null, null, null);
-        User user = new User(null, "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), invalidRole);
+        User user = new User(null, "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), invalidRole, "@Client1234");
 
         StepVerifier.create(userRepositoryAdapter.save(user))
                 .expectError(DataIntegrityViolationException.class)

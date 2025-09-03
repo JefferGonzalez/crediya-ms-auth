@@ -1,14 +1,21 @@
-package co.com.pragma.crediya.api.exceptions;
+package co.com.pragma.crediya.api.exceptions.handler;
 
 import co.com.pragma.crediya.api.constants.HttpErrorTitles;
+import co.com.pragma.crediya.api.exceptions.EmptyRequestBodyException;
+import co.com.pragma.crediya.api.exceptions.FieldValidationError;
+import co.com.pragma.crediya.api.exceptions.JwtAuthenticationException;
+import co.com.pragma.crediya.api.exceptions.ProblemDetails;
 import co.com.pragma.crediya.model.common.validation.ValidationFailuresException;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
+import co.com.pragma.crediya.model.user.exceptions.InvalidCredentialsException;
 import co.com.pragma.crediya.model.user.exceptions.SalaryOutOfRangeException;
+import co.com.pragma.crediya.model.user.exceptions.UserDataInconsistencyException;
 import co.com.pragma.crediya.model.user.exceptions.UserNotFoundException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.HttpStatus;
@@ -22,13 +29,10 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
 
     private final ObjectMapper objectMapper;
-
-    public GlobalExceptionHandler(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
@@ -66,9 +70,16 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
             return ProblemDetails.badRequest(HttpErrorTitles.BAD_REQUEST, errors);
         }
 
+        if (ex instanceof InvalidCredentialsException) {
+            return ProblemDetails.unauthorized(HttpErrorTitles.UNAUTHORIZED, ex.getMessage());
+        }
+
+        if (ex instanceof JwtAuthenticationException) {
+            return ProblemDetails.unauthorized(HttpErrorTitles.UNAUTHORIZED, ex.getMessage());
+        }
+
         if (ex instanceof UserNotFoundException) {
-            List<FieldValidationError> errors = List.of(new FieldValidationError(UserFieldNames.IDENTIFICATION_NUMBER, ex.getMessage()));
-            return ProblemDetails.notFound(HttpErrorTitles.NOT_FOUND, errors);
+            return ProblemDetails.notFound(HttpErrorTitles.NOT_FOUND, ex.getMessage());
         }
 
         if (ex instanceof ValidationFailuresException exs) {
@@ -80,7 +91,11 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
             return ProblemDetails.conflict(HttpErrorTitles.CONFLICT, errors);
         }
 
-        return new ProblemDetails(HttpErrorTitles.INTERNAL_SERVER_ERROR, HttpStatus.INTERNAL_SERVER_ERROR, null);
+        if (ex instanceof UserDataInconsistencyException) {
+            return ProblemDetails.internalSeverError(HttpErrorTitles.INTERNAL_SERVER_ERROR, ex.getMessage());
+        }
+
+        return new ProblemDetails(HttpErrorTitles.INTERNAL_SERVER_ERROR, "An unexpected error occurred while processing your request. Please try again later.", HttpStatus.INTERNAL_SERVER_ERROR, null);
     }
 
     private ProblemDetails handleConstraintViolation(ConstraintViolationException ex) {

@@ -8,6 +8,7 @@ CREATE TABLE users
     last_name             VARCHAR(100)        NOT NULL,
     identification_number VARCHAR(10) UNIQUE  NOT NULL,
     email                 VARCHAR(254) UNIQUE NOT NULL,
+    password              VARCHAR(255)        NOT NULL,
     base_salary           DECIMAL(15, 2)      NOT NULL,
     birth_date            DATE,
     phone_number          VARCHAR(20),

@@ -15,4 +15,8 @@ public final class UserErrorMessages {
 
     public static final String EMAIL_ALREADY_TAKEN = "This email address is already registered.";
 
+    public static final String INVALID_CREDENTIALS = "Invalid credentials provided. Please check your email and password.";
+
+    public static final String USER_DATA_INCONSISTENCY = "Authentication failed due to invalid user data";
+
 }

@@ -12,6 +12,12 @@ spring:
     password: ${R2DBC_PASSWORD}
     default-schema: ${R2DBC_SCHEMA}
 
+application:
+  security:
+    jwt:
+      expiration: 3600000
+      secret-key: ${JWT_SECRET_KEY}
+
 logging:
   level:
     root: INFO

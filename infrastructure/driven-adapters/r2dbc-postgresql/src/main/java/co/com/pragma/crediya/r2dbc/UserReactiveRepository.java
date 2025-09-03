@@ -16,4 +16,6 @@ public interface UserReactiveRepository
 
     Mono<UserEntity> findByIdentificationNumber(String identificationNumber);
 
+    Mono<UserEntity> findByEmail(String email);
+
 }

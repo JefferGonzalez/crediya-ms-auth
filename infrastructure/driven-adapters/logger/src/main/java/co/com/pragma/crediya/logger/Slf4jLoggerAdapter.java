@@ -21,8 +21,8 @@ public record Slf4jLoggerAdapter(Logger logger) implements LoggerPort {
     }
 
     @Override
-    public void error(String message, Throwable throwable) {
-        logger.error(message, throwable);
+    public void error(String message, Object... args) {
+        logger.error(message, args);
     }
 
 }

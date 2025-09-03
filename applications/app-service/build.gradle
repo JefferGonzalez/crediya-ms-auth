@@ -1,6 +1,8 @@
 apply plugin: 'org.springframework.boot'
 
 dependencies {
+	implementation project(':password-encoder')
+	implementation project(':jwt')
 	implementation project(':logger')
 	implementation project(':reactive-web')
 	implementation project(':r2dbc-postgresql')
@@ -8,7 +10,6 @@ dependencies {
     implementation project(':usecase')
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-data-r2dbc'
-    implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.11'
 
     runtimeOnly('org.springframework.boot:spring-boot-devtools')
 

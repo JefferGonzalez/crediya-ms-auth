@@ -1,14 +1,18 @@
 package co.com.pragma.crediya.api;
 
-import co.com.pragma.crediya.api.dto.SaveUserRequest;
-import co.com.pragma.crediya.api.dto.UserResponse;
+import co.com.pragma.crediya.api.constants.ApiConstants;
+import co.com.pragma.crediya.api.dto.*;
 import co.com.pragma.crediya.api.exceptions.ProblemDetails;
+import co.com.pragma.crediya.model.user.constants.UserErrorMessages;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springdoc.core.annotations.RouterOperation;
 import org.springdoc.core.annotations.RouterOperations;
 import org.springframework.context.annotation.Bean;
@@ -25,7 +29,69 @@ public class RouterRest {
     @Bean
     @RouterOperations({
             @RouterOperation(
-                    path = "/api/v1/users",
+                    path = ApiConstants.LOGIN_PATH,
+                    produces = {MediaType.APPLICATION_JSON_VALUE},
+                    method = RequestMethod.POST,
+                    beanClass = UserHandler.class,
+                    beanMethod = "login",
+                    operation = @Operation(
+                            operationId = "login",
+                            requestBody = @RequestBody(
+                                    content = @Content(schema = @Schema(implementation = LoginRequest.class)),
+                                    required = true,
+                                    description = "Request body for login"
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Login successfully",
+                                            content = @Content(schema = @Schema(implementation = TokenResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "400",
+                                            description = "Request body is required",
+                                            content = @Content(schema = @Schema(implementation = ProblemDetails.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "401",
+                                            description = UserErrorMessages.INVALID_CREDENTIALS,
+                                            content = @Content(schema = @Schema(implementation = ProblemDetails.class))
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ApiConstants.USER_BY_IDENTIFICATION_NUMBER_PATH,
+                    produces = {MediaType.APPLICATION_JSON_VALUE},
+                    method = RequestMethod.GET,
+                    beanClass = UserHandler.class,
+                    beanMethod = "getUserByIdentificationNumber",
+                    operation = @Operation(
+                            operationId = "getUserByIdentificationNumber",
+                            parameters = @Parameter(
+                                    in = ParameterIn.PATH,
+                                    name = UserFieldNames.IDENTIFICATION_NUMBER,
+                                    description = "User's identification number",
+                                    required = true,
+                                    example = "1234567890"
+                            ),
+                            security = @SecurityRequirement(name = "bearerAuth"),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "User found successfully",
+                                            content = @Content(schema = @Schema(implementation = UserEmailResponse.class))
+                                    ),
+                                    @ApiResponse(
+                                            responseCode = "404",
+                                            description = "User with provided identification number not found",
+                                            content = @Content(schema = @Schema(implementation = ProblemDetails.class))
+                                    )
+                            }
+                    )
+            ),
+            @RouterOperation(
+                    path = ApiConstants.USERS_PATH,
                     produces = {MediaType.APPLICATION_JSON_VALUE},
                     method = RequestMethod.POST,
                     beanClass = UserHandler.class,
@@ -41,6 +107,7 @@ public class RouterRest {
                                     required = true,
                                     description = "User data required to create a new account"
                             ),
+                            security = @SecurityRequirement(name = "bearerAuth"),
                             responses = {
                                     @ApiResponse(
                                             responseCode = "201",
@@ -68,8 +135,9 @@ public class RouterRest {
     })
     public RouterFunction<ServerResponse> routerFunction(UserHandler handler) {
         return RouterFunctions.route()
-                .GET("/api/v1/users/{" + UserFieldNames.IDENTIFICATION_NUMBER + "}", handler::getUserByIdentificationNumber)
-                .POST("/api/v1/users", handler::createUser)
+                .POST(ApiConstants.LOGIN_PATH, handler::login)
+                .GET(ApiConstants.USER_BY_IDENTIFICATION_NUMBER_PATH, handler::getUserByIdentificationNumber)
+                .POST(ApiConstants.USERS_PATH, handler::createUser)
                 .build();
     }
 

@@ -61,6 +61,11 @@ public class SaveUserRequest {
     @Schema(description = "User's phone number", example = "+57 3201234567")
     private String phoneNumber;
 
+    @NotBlank(message = ValidationErrorMessages.PASSWORD_REQUIRED)
+    @Pattern(regexp = ValidationPatterns.PASSWORD_REGEX, message = ValidationErrorMessages.INVALID_PASSWORD_FORMAT)
+    @Schema(description = "User's password.", example = "P@ssw0rd")
+    private String password;
+
     public LocalDate getBirthDate() {
         return (birthDate == null || birthDate.isEmpty()) ? null : LocalDate.parse(birthDate);
     }

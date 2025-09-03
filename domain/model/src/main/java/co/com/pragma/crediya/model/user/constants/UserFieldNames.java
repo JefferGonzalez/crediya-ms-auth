@@ -11,4 +11,6 @@ public final class UserFieldNames {
 
     public static final String BASE_SALARY = "baseSalary";
 
+    public static final String ROLES = "roles";
+
 }

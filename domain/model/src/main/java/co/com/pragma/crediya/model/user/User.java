@@ -14,5 +14,6 @@ public record User(
         String address,
         String phoneNumber,
         BigDecimal baseSalary,
-        Role role) {
+        Role role,
+        String password) {
 }

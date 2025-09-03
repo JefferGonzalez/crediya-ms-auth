@@ -1,6 +1,8 @@
 package co.com.pragma.crediya.config;
 
+import co.com.pragma.crediya.model.jwt.gateways.JwtProviderPort;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
+import co.com.pragma.crediya.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.crediya.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
@@ -55,5 +57,16 @@ class UseCasesConfigTest {
         public TransactionalPort transactionalPort() {
             return Mockito.mock(TransactionalPort.class);
         }
+
+        @Bean
+        public PasswordEncoderPort passwordEncoder() {
+            return Mockito.mock(PasswordEncoderPort.class);
+        }
+
+        @Bean
+        public JwtProviderPort jwtProvider() {
+            return Mockito.mock(JwtProviderPort.class);
+        }
+
     }
 }

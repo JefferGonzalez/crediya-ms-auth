@@ -23,6 +23,12 @@ adapters:
     username: ${R2DBC_USERNAME}
     password: ${R2DBC_PASSWORD}
 
+application:
+  security:
+    jwt:
+      expiration: 7200000
+      secret-key: ${JWT_SECRET_KEY}
+
 logging:
   level:
     org.springframework.r2dbc.core.DefaultDatabaseClient: DEBUG

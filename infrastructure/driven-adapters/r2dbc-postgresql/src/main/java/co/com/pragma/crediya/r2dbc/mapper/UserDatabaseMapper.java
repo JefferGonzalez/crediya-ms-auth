@@ -9,8 +9,16 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", injectionStrategy = InjectionStrategy.CONSTRUCTOR)
 public interface UserDatabaseMapper {
 
+    @Mapping(target = "password", ignore = true)
     @Mapping(source = "userEntity.id", target = "id")
     User toDomain(UserEntity userEntity);
+
+    @Mapping(source = "rolId", target = "role.id")
+    @Mapping(target = "role.name", ignore = true)
+    @Mapping(target = "role.description", ignore = true)
+    @Mapping(source = "userEntity.id", target = "id")
+    @Mapping(source = "userEntity.password", target = "password")
+    User toDomainForAuth(UserEntity userEntity);
 
     @Mapping(source = "role.id", target = "rolId")
     UserEntity toEntity(User user);

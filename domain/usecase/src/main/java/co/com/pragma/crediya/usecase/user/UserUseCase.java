@@ -4,6 +4,7 @@ import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.model.common.validation.ValidationFailuresException;
 import co.com.pragma.crediya.model.common.validation.ValidationOutcome;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
+import co.com.pragma.crediya.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.crediya.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
@@ -22,6 +23,7 @@ import java.util.List;
 public record UserUseCase(UserRepository userRepository,
                           RoleRepository roleRepository,
                           LoggerPort logger,
+                          PasswordEncoderPort passwordEncoderPort,
                           TransactionalPort transactionalPort) {
 
     public Mono<User> save(User user) {
@@ -36,8 +38,8 @@ public record UserUseCase(UserRepository userRepository,
         }
 
         if (user.role() == null) {
-            Role defaultRole = new Role(null, DomainConstants.DEFAULT_ROLE, null);
-            user = new User(null, user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), user.baseSalary(), defaultRole);
+            Role defaultRole = new Role(null, DomainConstants.CUSTOMER_ROLE, null);
+            user = new User(null, user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), user.baseSalary(), defaultRole, user.password());
         }
 
         User finalUser = user;
@@ -66,15 +68,15 @@ public record UserUseCase(UserRepository userRepository,
                 })
                 .flatMap(role ->
                         {
-                            User userToSave = new User(null, finalUser.names(), finalUser.lastName(), finalUser.birthDate(), finalUser.identificationNumber(), finalUser.email(), finalUser.address(), finalUser.phoneNumber(), finalUser.baseSalary(), role);
+                            User userToSave = new User(null, finalUser.names(), finalUser.lastName(), finalUser.birthDate(), finalUser.identificationNumber(), finalUser.email(), finalUser.address(), finalUser.phoneNumber(), finalUser.baseSalary(), role, passwordEncoderPort.encode(finalUser.password()));
 
                             logger.info("Saving user with email: {}", finalUser.email());
                             return userRepository.save(userToSave)
-                                    .map(storedUser -> new User(storedUser.id(), storedUser.names(), storedUser.lastName(), storedUser.birthDate(), storedUser.identificationNumber(), storedUser.email(), storedUser.address(), storedUser.phoneNumber(), storedUser.baseSalary(), role));
+                                    .map(storedUser -> new User(storedUser.id(), storedUser.names(), storedUser.lastName(), storedUser.birthDate(), storedUser.identificationNumber(), storedUser.email(), storedUser.address(), storedUser.phoneNumber(), storedUser.baseSalary(), role, null));
                         }
                 ).as(transactionalPort::transactional)
                 .doOnSuccess(storedUser -> logger.info("User saved successfully with id: {}", storedUser.id()))
-                .doOnError(e -> logger.error("Failed to save user with email: " + finalUser.email(), e));
+                .doOnError(e -> logger.error("Failed to save user with email: {}", finalUser.email(), e));
     }
 
     public Mono<User> findByIdentificationNumber(String identificationNumber) {

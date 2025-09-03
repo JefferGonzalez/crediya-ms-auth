@@ -13,4 +13,6 @@ public final class ValidationPatterns {
 
     public static final String IDENTIFICATION_NUMBER_REGEX = "^\\d+$";
 
+    public static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~\\\\/-]).{8,16}$";
+
 }

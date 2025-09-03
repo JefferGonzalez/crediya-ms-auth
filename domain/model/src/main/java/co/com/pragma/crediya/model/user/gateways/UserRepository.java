@@ -11,6 +11,8 @@ public interface UserRepository {
 
     Mono<User> findByIdentificationNumber(String identificationNumber);
 
+    Mono<User> findByEmail(String email);
+
     Mono<User> save(User user);
 
 }

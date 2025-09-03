@@ -32,6 +32,12 @@ public class UserRepositoryAdapter implements UserRepository {
     }
 
     @Override
+    public Mono<User> findByEmail(String email) {
+        return userReactiveRepository.findByEmail(email)
+                .map(userMapper::toDomainForAuth);
+    }
+
+    @Override
     public Mono<User> save(User user) {
         return userReactiveRepository.save(userMapper.toEntity(user))
                 .map(userMapper::toDomain);

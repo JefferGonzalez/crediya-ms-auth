@@ -80,7 +80,7 @@ public class RouterRest {
                                     @ApiResponse(
                                             responseCode = "200",
                                             description = "User found successfully",
-                                            content = @Content(schema = @Schema(implementation = UserEmailResponse.class))
+                                            content = @Content(schema = @Schema(implementation = UserResponse.class))
                                     ),
                                     @ApiResponse(
                                             responseCode = "404",
@@ -138,6 +138,7 @@ public class RouterRest {
                 .POST(ApiConstants.LOGIN_PATH, handler::login)
                 .GET(ApiConstants.USER_BY_IDENTIFICATION_NUMBER_PATH, handler::getUserByIdentificationNumber)
                 .POST(ApiConstants.USERS_PATH, handler::createUser)
+                .POST(ApiConstants.USERS_SEARCH_PATH, handler::search)
                 .build();
     }
 

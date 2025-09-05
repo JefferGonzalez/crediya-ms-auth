@@ -5,7 +5,10 @@ import co.com.pragma.crediya.model.user.gateways.UserRepository;
 import co.com.pragma.crediya.r2dbc.mapper.UserDatabaseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
@@ -35,6 +38,12 @@ public class UserRepositoryAdapter implements UserRepository {
     public Mono<User> findByEmail(String email) {
         return userReactiveRepository.findByEmail(email)
                 .map(userMapper::toDomainForAuth);
+    }
+
+    @Override
+    public Flux<User> findAllByEmailIn(List<String> emails) {
+        return userReactiveRepository.findAllByEmailIn(emails)
+                .map(userMapper::toDomain);
     }
 
     @Override

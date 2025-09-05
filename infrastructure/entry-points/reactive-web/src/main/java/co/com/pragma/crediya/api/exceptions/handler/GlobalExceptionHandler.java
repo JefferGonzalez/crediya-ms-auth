@@ -119,7 +119,7 @@ public class GlobalExceptionHandler implements ErrorWebExceptionHandler {
     }
 
     private FieldValidationError mapConstraintViolation(ConstraintViolation<?> violation) {
-        String fieldName = violation.getPropertyPath().toString();
+        String fieldName = violation.getPropertyPath().toString().replace(".<list element>", "");
         String message = violation.getMessage();
 
         return new FieldValidationError(fieldName, message);

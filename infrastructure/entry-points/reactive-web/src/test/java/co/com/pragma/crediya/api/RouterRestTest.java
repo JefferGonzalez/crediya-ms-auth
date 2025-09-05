@@ -4,7 +4,10 @@ import co.com.pragma.crediya.api.config.security.JwtAuthenticationManager;
 import co.com.pragma.crediya.api.config.security.SecurityConfig;
 import co.com.pragma.crediya.api.config.security.SecurityContextRepository;
 import co.com.pragma.crediya.api.constants.ApiConstants;
-import co.com.pragma.crediya.api.dto.*;
+import co.com.pragma.crediya.api.dto.LoginRequest;
+import co.com.pragma.crediya.api.dto.SaveUserRequest;
+import co.com.pragma.crediya.api.dto.TokenResponse;
+import co.com.pragma.crediya.api.dto.UserResponse;
 import co.com.pragma.crediya.api.exceptions.handler.CustomAccessDeniedHandler;
 import co.com.pragma.crediya.api.exceptions.handler.GlobalExceptionHandler;
 import co.com.pragma.crediya.api.mapper.UserRestMapper;
@@ -161,8 +164,12 @@ class RouterRestTest {
         when(userUseCase.findByIdentificationNumber(user.identificationNumber()))
                 .thenReturn(Mono.just(user));
 
-        UserEmailResponse emailResponse = new UserEmailResponse(user.identificationNumber(), user.email());
-        when(userRestMapper.toEmailResponse(user)).thenReturn(emailResponse);
+        UserResponse response = UserResponse.builder()
+                .identificationNumber(user.identificationNumber())
+                .email(user.email())
+                .build();
+
+        when(userRestMapper.toResponse(user)).thenReturn(response);
 
         webTestClient.get()
                 .uri(ApiConstants.USER_BY_IDENTIFICATION_NUMBER_PATH, user.identificationNumber())
@@ -170,8 +177,8 @@ class RouterRestTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.identificationNumber").isEqualTo(emailResponse.getIdentificationNumber())
-                .jsonPath("$.email").isEqualTo(emailResponse.getEmail());
+                .jsonPath("$.identificationNumber").isEqualTo(response.getIdentificationNumber())
+                .jsonPath("$.email").isEqualTo(response.getEmail());
     }
 
     @Test

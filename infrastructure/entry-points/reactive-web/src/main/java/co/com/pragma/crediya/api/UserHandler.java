@@ -1,5 +1,6 @@
 package co.com.pragma.crediya.api;
 
+import co.com.pragma.crediya.api.dto.EmailsRequest;
 import co.com.pragma.crediya.api.dto.LoginRequest;
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
 import co.com.pragma.crediya.api.dto.TokenResponse;
@@ -59,11 +60,26 @@ public class UserHandler {
         String identificationNumber = request.pathVariable(UserFieldNames.IDENTIFICATION_NUMBER);
 
         return userUseCase.findByIdentificationNumber(identificationNumber)
-                .map(userMapper::toEmailResponse)
+                .map(userMapper::toResponse)
                 .flatMap(user ->
                         ServerResponse.ok()
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .bodyValue(user));
+    }
+
+    public Mono<ServerResponse> search(ServerRequest request) {
+        return request
+                .bodyToMono(EmailsRequest.class)
+                .switchIfEmpty(Mono.error(new EmptyRequestBodyException()))
+                .flatMap(reactiveValidator::validate)
+                .flatMapMany(dto -> userUseCase.findAllByEmails(dto.getEmails()))
+                .map(userMapper::toResponse)
+                .collectList()
+                .flatMap(users ->
+                        ServerResponse.ok()
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .bodyValue(users)
+                );
     }
 
 }

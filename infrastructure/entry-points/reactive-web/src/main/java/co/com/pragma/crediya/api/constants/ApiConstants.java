@@ -13,7 +13,7 @@ public final class ApiConstants {
 
     public static final String USERS_PATH = API_V1 + "/users";
 
-
+    public static final String USERS_SEARCH_PATH = USERS_PATH + "/search";
 
     public static final String USER_BY_IDENTIFICATION_NUMBER_PATH = USERS_PATH + "{" + UserFieldNames.IDENTIFICATION_NUMBER + "}";
 

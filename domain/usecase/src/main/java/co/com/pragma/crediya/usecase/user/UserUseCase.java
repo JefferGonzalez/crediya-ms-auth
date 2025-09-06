@@ -14,6 +14,7 @@ import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import co.com.pragma.crediya.model.user.exceptions.*;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
@@ -90,6 +91,12 @@ public record UserUseCase(UserRepository userRepository,
                     return Mono.error(ex);
                 }))
                 .doOnNext(user -> logger.info("User found: {}", user.identificationNumber()));
+    }
+
+    public Flux<User> findAllByEmails(List<String> emails) {
+        logger.info("Finding users by {} emails", emails.size());
+
+        return userRepository.findAllByEmailIn(emails);
     }
 
     private Mono<Role> validateRoleExists(String roleName) {

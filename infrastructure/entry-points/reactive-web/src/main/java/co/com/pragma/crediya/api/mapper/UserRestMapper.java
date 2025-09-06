@@ -1,7 +1,6 @@
 package co.com.pragma.crediya.api.mapper;
 
 import co.com.pragma.crediya.api.dto.SaveUserRequest;
-import co.com.pragma.crediya.api.dto.UserEmailResponse;
 import co.com.pragma.crediya.api.dto.UserResponse;
 import co.com.pragma.crediya.model.user.User;
 import org.mapstruct.Mapper;
@@ -16,7 +15,5 @@ public interface UserRestMapper {
 
     @Mapping(source = "role.name", target = "rol")
     UserResponse toResponse(User user);
-
-    UserEmailResponse toEmailResponse(User user);
 
 }

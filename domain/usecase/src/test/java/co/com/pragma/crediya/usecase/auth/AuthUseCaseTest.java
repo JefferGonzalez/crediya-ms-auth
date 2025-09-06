@@ -7,6 +7,7 @@ import co.com.pragma.crediya.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
 import co.com.pragma.crediya.model.user.exceptions.InvalidCredentialsException;
+import co.com.pragma.crediya.model.user.exceptions.UserDataInconsistencyException;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
 import org.junit.jupiter.api.Assertions;
@@ -99,5 +100,18 @@ class AuthUseCaseTest {
                 .expectError(InvalidCredentialsException.class)
                 .verify();
     }
+
+    @Test
+    @DisplayName("authenticate() should throw UserDataInconsistencyException when role is not found")
+    void authenticate_WhenRoleNotFound_ShouldThrowException() {
+        when(userRepository.findByEmail(user.email())).thenReturn(Mono.just(user));
+        when(passwordEncoderPort.matches(user.password(), user.password())).thenReturn(true);
+        when(roleRepository.findById(role.id())).thenReturn(Mono.empty());
+
+        StepVerifier.create(authUseCase.authenticate(user.email(), user.password()))
+                .expectError(UserDataInconsistencyException.class)
+                .verify();
+    }
+
 
 }

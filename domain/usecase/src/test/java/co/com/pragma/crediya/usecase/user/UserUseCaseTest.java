@@ -2,17 +2,20 @@ package co.com.pragma.crediya.usecase.user;
 
 import co.com.pragma.crediya.model.common.constants.DomainConstants;
 import co.com.pragma.crediya.model.common.validation.ValidationFailuresException;
+import co.com.pragma.crediya.model.common.validation.ValidationOutcome;
 import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
 import co.com.pragma.crediya.model.password.gateways.PasswordEncoderPort;
 import co.com.pragma.crediya.model.transaction.gateways.TransactionalPort;
 import co.com.pragma.crediya.model.user.Role;
 import co.com.pragma.crediya.model.user.User;
+import co.com.pragma.crediya.model.user.constants.UserErrorMessages;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
 import co.com.pragma.crediya.model.user.exceptions.RoleNotFoundException;
 import co.com.pragma.crediya.model.user.exceptions.SalaryOutOfRangeException;
 import co.com.pragma.crediya.model.user.exceptions.UserNotFoundException;
 import co.com.pragma.crediya.model.user.gateways.RoleRepository;
 import co.com.pragma.crediya.model.user.gateways.UserRepository;
+import co.com.pragma.crediya.usecase.user.validation.ValidationUserOrchestrator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +47,9 @@ class UserUseCaseTest {
     private RoleRepository roleRepository;
 
     @Mock
+    private ValidationUserOrchestrator validationUserOrchestrator;
+
+    @Mock
     private LoggerPort logger;
 
     @Mock
@@ -59,10 +65,31 @@ class UserUseCaseTest {
 
     private User user;
 
+    private List<ValidationOutcome> successfulValidations;
+
+    private List<ValidationOutcome> emailErrorValidations;
+
+    private List<ValidationOutcome> identificationNumberErrorValidations;
+
     @BeforeEach
     void setUp() {
         role = new Role(UUID.randomUUID(), DomainConstants.CUSTOMER_ROLE, null);
         user = new User(UUID.randomUUID(), "John", "Doe", LocalDate.of(1980, 1, 1), "123456789", "johndoe@example.com", "Unknown", "123456789", new BigDecimal("15000000"), role, "@Client1234");
+
+        successfulValidations = List.of(
+                ValidationOutcome.success(UserFieldNames.EMAIL),
+                ValidationOutcome.success(UserFieldNames.IDENTIFICATION_NUMBER)
+        );
+
+        emailErrorValidations = List.of(
+                ValidationOutcome.error(UserFieldNames.EMAIL, UserErrorMessages.EMAIL_ALREADY_TAKEN),
+                ValidationOutcome.success(UserFieldNames.IDENTIFICATION_NUMBER)
+        );
+
+        identificationNumberErrorValidations = List.of(
+                ValidationOutcome.success(UserFieldNames.EMAIL),
+                ValidationOutcome.error(UserFieldNames.IDENTIFICATION_NUMBER, UserErrorMessages.IDENTIFICATION_NUMBER_ALREADY_TAKEN)
+        );
 
         lenient().when(transactionalPort.transactional(any(Mono.class))).then(returnsFirstArg());
         lenient().when(passwordEncoderPort.encode(anyString())).thenReturn("hashed_password");
@@ -71,9 +98,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should persist user when data is valid and role is provided")
     void save_WhenDataIsValidAndRoleProvided_ShouldSaveUser() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(role.name())).thenReturn(Mono.just(role));
 
@@ -93,9 +118,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should encode password before persisting user")
     void save_ShouldEncodePasswordBeforePersistingUser() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(role.name())).thenReturn(Mono.just(role));
 
@@ -113,8 +136,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should propagate error when userRepository.save() fails")
     void save_WhenRepositorySaveFails_ShouldPropagateError() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(role.name())).thenReturn(Mono.just(role));
 
@@ -130,7 +152,9 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should throw SalaryOutOfRangeException when salary is negative")
     void save_WhenSalaryIsNegative_ShouldThrowSalaryOutOfRangeException() {
-        User userWithNegativeSalary = new User(user.id(), user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), new BigDecimal("-1000"), role, null);
+        User userWithNegativeSalary = new User(user.id(), user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), new BigDecimal("-1000"), role, user.password());
+
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         StepVerifier.create(userUseCase.save(userWithNegativeSalary))
                 .expectError(SalaryOutOfRangeException.class)
@@ -144,6 +168,8 @@ class UserUseCaseTest {
     void save_WhenSalaryExceedsMax_ShouldThrowSalaryOutOfRangeException() {
         User userWithHighSalary = new User(user.id(), user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), new BigDecimal("999999999"), role, user.password());
 
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
+
         StepVerifier.create(userUseCase.save(userWithHighSalary))
                 .expectError(SalaryOutOfRangeException.class)
                 .verify();
@@ -154,9 +180,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should throw RoleNotFoundException when role does not exist")
     void save_WhenRoleNotFound_ShouldThrowRoleNotFoundException() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(role.name())).thenReturn(Mono.empty());
 
@@ -172,9 +196,7 @@ class UserUseCaseTest {
     void save_WhenRoleIsNullAndDefaultRoleNotFound_ShouldThrowRoleNotFoundException() {
         User userWithoutRole = new User(user.id(), user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), user.baseSalary(), null, user.password());
 
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(DomainConstants.CUSTOMER_ROLE)).thenReturn(Mono.empty());
 
@@ -218,9 +240,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should throw ValidationFailuresException when email already exists")
     void save_WhenEmailAlreadyExists_ShouldThrowValidationFailuresException() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(true));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(emailErrorValidations));
 
         StepVerifier.create(userUseCase.save(user))
                 .expectErrorMatches(throwable -> throwable instanceof ValidationFailuresException &&
@@ -232,9 +252,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should throw ValidationFailuresException when identification number already exists")
     void save_WhenIdentificationNumberAlreadyExists_ShouldThrowValidationFailuresException() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(true));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(identificationNumberErrorValidations));
 
         StepVerifier.create(userUseCase.save(user))
                 .expectErrorMatches(throwable -> throwable instanceof ValidationFailuresException &&
@@ -246,9 +264,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should handle error when validating email uniqueness")
     void save_WhenExistsByEmailFails_ShouldReturnValidationError() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.error(new RuntimeException("DB error")));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(emailErrorValidations));
 
         StepVerifier.create(userUseCase.save(user))
                 .expectError(ValidationFailuresException.class)
@@ -258,9 +274,7 @@ class UserUseCaseTest {
     @Test
     @DisplayName("save() should handle error when validating identification number uniqueness")
     void save_WhenExistsByIdentificationNumberFails_ShouldReturnValidationError() {
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.error(new RuntimeException("DB error")));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(identificationNumberErrorValidations));
 
         StepVerifier.create(userUseCase.save(user))
                 .expectError(ValidationFailuresException.class)
@@ -272,9 +286,7 @@ class UserUseCaseTest {
     void save_WhenRoleIsNull_ShouldAssignDefaultRole() {
         User userWithoutRole = new User(user.id(), user.names(), user.lastName(), user.birthDate(), user.identificationNumber(), user.email(), user.address(), user.phoneNumber(), user.baseSalary(), null, user.password());
 
-        when(userRepository.existsByEmail(user.email())).thenReturn(Mono.just(false));
-
-        when(userRepository.existsByIdentificationNumber(user.identificationNumber())).thenReturn(Mono.just(false));
+        when(validationUserOrchestrator.validate(any(User.class))).thenReturn(Mono.just(successfulValidations));
 
         when(roleRepository.findByName(DomainConstants.CUSTOMER_ROLE)).thenReturn(Mono.just(role));
 

@@ -11,9 +11,19 @@ import org.mapstruct.Mapping;
 public interface UserDatabaseMapper {
 
     @Mapping(target = "password", ignore = true)
+    @Mapping(target = "role", ignore = true)
     @Mapping(source = "userEntity.id", target = "id")
     User toDomain(UserEntity userEntity);
 
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "names", ignore = true)
+    @Mapping(target = "lastName", ignore = true)
+    @Mapping(target = "birthDate", ignore = true)
+    @Mapping(target = "identificationNumber", ignore = true)
+    @Mapping(target = "address", ignore = true)
+    @Mapping(target = "phoneNumber", ignore = true)
+    @Mapping(target = "role", ignore = true)
+    @Mapping(target = "password", ignore = true)
     User toDomain(UserProjection userProjection);
 
     @Mapping(source = "rolId", target = "role.id")

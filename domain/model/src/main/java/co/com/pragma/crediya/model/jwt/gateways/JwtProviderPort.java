@@ -9,6 +9,4 @@ public interface JwtProviderPort {
 
     Jwt parseToken(String token);
 
-    boolean validate(String token);
-
 }

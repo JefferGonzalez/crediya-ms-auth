@@ -13,7 +13,11 @@ public final class UserErrorMessages {
 
     public static final String IDENTIFICATION_NUMBER_ALREADY_TAKEN = "This identification number is already registered.";
 
+    public static final String ERROR_VALIDATING_IDENTIFICATION_NUMBER = "Error validating identification";
+
     public static final String EMAIL_ALREADY_TAKEN = "This email address is already registered.";
+
+    public static final String ERROR_VALIDATING_EMAIL = "Error validating email";
 
     public static final String INVALID_CREDENTIALS = "Invalid credentials provided. Please check your email and password.";
 

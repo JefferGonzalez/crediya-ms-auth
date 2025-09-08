@@ -15,4 +15,5 @@ public class ValidationFailuresException extends RuntimeException {
     public List<ValidationOutcome> getErrors() {
         return errors;
     }
+
 }

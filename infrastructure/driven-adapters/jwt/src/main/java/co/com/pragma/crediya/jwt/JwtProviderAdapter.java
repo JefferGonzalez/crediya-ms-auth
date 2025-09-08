@@ -3,10 +3,10 @@ package co.com.pragma.crediya.jwt;
 import co.com.pragma.crediya.jwt.config.JwtProperties;
 import co.com.pragma.crediya.model.jwt.Jwt;
 import co.com.pragma.crediya.model.jwt.gateways.JwtProviderPort;
-import co.com.pragma.crediya.model.logs.gateways.LoggerPort;
 import co.com.pragma.crediya.model.user.User;
 import co.com.pragma.crediya.model.user.constants.UserFieldNames;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +24,6 @@ public class JwtProviderAdapter implements JwtProviderPort {
 
     private final JwtProperties properties;
 
-    private final LoggerPort logger;
-
     @Override
     public String generateToken(User user) {
         return buildToken(user, properties.getExpiration());
@@ -40,43 +38,6 @@ public class JwtProviderAdapter implements JwtProviderPort {
         String identificationNumber = extractIdentificationNumber(claims);
 
         return new Jwt(subject, roles, identificationNumber);
-    }
-
-    @Override
-    public boolean validate(String token) {
-        if (token == null || token.trim().isEmpty()) {
-            logger.warn("JWT validation failed: Token is null or empty");
-            return false;
-        }
-
-        try {
-            Claims claims = extractClaims(token);
-            String subject = extractSubject(claims);
-
-            if (subject == null || subject.trim().isEmpty()) {
-                logger.warn("JWT validation failed: Subject is null or empty");
-                return false;
-            }
-
-            logger.info("JWT validation successful for subject: {}", subject);
-
-            return true;
-        } catch (ExpiredJwtException e) {
-            logger.warn("JWT validation failed: Token expired for subject: {}", e.getClaims().getSubject());
-            return false;
-        } catch (UnsupportedJwtException e) {
-            logger.warn("JWT validation failed: Unsupported token format");
-            return false;
-        } catch (MalformedJwtException e) {
-            logger.warn("JWT validation failed: Malformed token structure");
-            return false;
-        } catch (IllegalArgumentException e) {
-            logger.warn("JWT validation failed: Invalid arguments provided");
-            return false;
-        } catch (Exception e) {
-            logger.error("JWT validation failed: Unexpected error occurred", e);
-            return false;
-        }
     }
 
     private String buildToken(User user, long expiration) {

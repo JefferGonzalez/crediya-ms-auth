@@ -9,6 +9,4 @@ public interface RoleDatabaseMapper {
 
     Role toDomain(RoleEntity entity);
 
-    RoleEntity toEntity(Role role);
-
 }

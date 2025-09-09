@@ -15,13 +15,16 @@ public final class ApiConstants {
 
     public static final String USERS_SEARCH_PATH = USERS_PATH + "/search";
 
-    public static final String USER_BY_IDENTIFICATION_NUMBER_PATH = USERS_PATH + "{" + UserFieldNames.IDENTIFICATION_NUMBER + "}";
+    public static final String USER_BY_IDENTIFICATION_NUMBER_PATH = USERS_PATH + "/{" + UserFieldNames.IDENTIFICATION_NUMBER + "}";
 
     public static final String[] PUBLIC_PATTERNS = {
-            LOGIN_PATH + "/**",
+            "/actuator",
+            "/actuator/health",
+            "/actuator/prometheus",
             "/v3/api-docs/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            LOGIN_PATH + "/**"
     };
 
     public static final String[] PRIVATE_PATTERNS = {

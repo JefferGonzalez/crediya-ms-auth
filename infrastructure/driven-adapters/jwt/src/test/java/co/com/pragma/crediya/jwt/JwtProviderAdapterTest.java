@@ -57,6 +57,8 @@ class JwtProviderAdapterTest {
         assertEquals(jwt.roles(), List.of(user.role().name()));
 
         assertThat(jwt.identificationNumber()).isEqualTo(user.identificationNumber());
+
+        assertThat(jwt.baseSalary()).isEqualTo(user.baseSalary());
     }
 
 }

@@ -30,3 +30,5 @@ include ':jwt'
 project(':jwt').projectDir = file('./infrastructure/driven-adapters/jwt')
 include ':password-encoder'
 project(':password-encoder').projectDir = file('./infrastructure/driven-adapters/password-encoder')
+include ':metrics'
+project(':metrics').projectDir = file('./infrastructure/helpers/metrics')

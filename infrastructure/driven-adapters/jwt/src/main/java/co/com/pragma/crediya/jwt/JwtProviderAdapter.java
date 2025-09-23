@@ -24,7 +24,7 @@ public class JwtProviderAdapter implements JwtProviderPort {
 
     @Override
     public String generateToken(User user) {
-        return buildToken(user, properties.getExpiration());
+        return buildToken(user, properties.expiration());
     }
 
     @Override
@@ -55,7 +55,7 @@ public class JwtProviderAdapter implements JwtProviderPort {
     }
 
     private SecretKey getSecretKey() {
-        String secretKey = properties.getSecretKey();
+        String secretKey = properties.secretKey();
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
 
         return Keys.hmacShaKeyFor(keyBytes);

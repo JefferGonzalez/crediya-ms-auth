@@ -24,9 +24,7 @@ class JwtProviderAdapterTest {
 
     @BeforeEach
     void setUp() {
-        JwtProperties properties = new JwtProperties();
-        properties.setSecretKey("q/MbiTiaKL9wCSeISqOlOQvDjg7s+xmYRtNhYbq7T3A=");
-        properties.setExpiration(10000L);
+        JwtProperties properties = new JwtProperties("q/MbiTiaKL9wCSeISqOlOQvDjg7s+xmYRtNhYbq7T3A=", 60000L);
 
         adapter = new JwtProviderAdapter(properties);
 

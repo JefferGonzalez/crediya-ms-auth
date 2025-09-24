@@ -9,21 +9,23 @@ public final class ApiConstants {
 
     public static final String API_V1 = "/api/v1";
 
-    public static final String LOGIN_PATH = API_V1 + "/login";
+    public static final String BASE_PATH = API_V1 + "/auth";
 
-    public static final String USERS_PATH = API_V1 + "/users";
+    public static final String LOGIN_PATH = BASE_PATH + "/login";
+
+    public static final String USERS_PATH = BASE_PATH + "/users";
 
     public static final String USERS_SEARCH_PATH = USERS_PATH + "/search";
 
     public static final String USER_BY_IDENTIFICATION_NUMBER_PATH = USERS_PATH + "/{" + UserFieldNames.IDENTIFICATION_NUMBER + "}";
 
     public static final String[] PUBLIC_PATTERNS = {
-            "/actuator",
-            "/actuator/health",
-            "/actuator/prometheus",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
+            BASE_PATH + "/actuator",
+            BASE_PATH + "/actuator/health",
+            BASE_PATH + "/actuator/prometheus",
+            BASE_PATH + "/swagger-ui.html",
+            BASE_PATH + "/swagger-ui/**",
+            BASE_PATH + "/api-docs/**",
             LOGIN_PATH + "/**"
     };
 
